@@ -1,4 +1,11 @@
-# Ticket Generator Challenge
+# Ticket Generator Challenge - Python Solution
+
+Python3 required.  
+To see the output, clone repository and run:
+```bash
+python bingo.py
+```
+Author: **Przemysław Baj**
 
 A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/wiki/Bingo_(United_Kingdom)) ticket generator.
 
