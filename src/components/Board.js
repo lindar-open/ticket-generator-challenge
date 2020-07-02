@@ -15,7 +15,7 @@ const Board = (props) => {
     function getTicketsFromFields(fields) {
         let result = []
         for(let i=0; i<fields.length; i=i+ticketHeight) {
-            result.push(fields.slice(0,ticketHeight))
+            result.push(fields.slice(i,i+ticketHeight))
         }
         return result
     }
