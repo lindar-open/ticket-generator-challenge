@@ -13,3 +13,6 @@ A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/w
   - The third, 20 (or 21) to 30 and so on up until the last column, which contains numbers from 81 to 90.
 * Each column should contain at least 1 number (and not 3 white spaces)
 * There can be **no duplicate** numbers between 1 and 90 **in the strip** (since you generate 6 tickets with 15 numbers each)
+
+Please make sure you add unit tests to verify the above conditions and an output to view the strips generated (command line is ok).
+Try to also think about the performance aspects of your solution. How long does it take to generate 10k strips? The recommended time is less than 1s (with a lightwight random implementation)
