@@ -16,4 +16,4 @@ A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/w
 
 **Please make sure you add unit tests to verify the above conditions and an output to view the strips generated (command line is ok).**
 
-Try to also think about the performance aspects of your solution. How long does it take to generate 10k strips? The recommended time is less than 1s (with a lightwight random implementation)
+Try to also think about the performance aspects of your solution. How long does it take to generate 10k strips? The recommended time is less than 1s (with a lightweight random implementation)
