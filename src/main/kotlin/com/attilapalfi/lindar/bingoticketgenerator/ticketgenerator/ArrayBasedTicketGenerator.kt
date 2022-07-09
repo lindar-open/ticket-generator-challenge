@@ -18,10 +18,11 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
     override fun nextNumber(ticket: Int, row: Int, column: Int): Int {
         if (numberArrays[column].isEmpty()) {
             println("This is wrong.")
+            sixTickets.invalidSpaces.add(SixTickets.TicketRowColumn(ticket, row, column))
             return BLANK
         }
         decrementRemainingNumbersInStripRow(ticket, row)
-        val randomIndex = randomProvider.nextInt(numberArrays[column].size - 1)
+        val randomIndex = randomProvider.nextInt(numberArrays[column].size)
         return numberArrays[column].removeAt(randomIndex)
     }
 
@@ -54,12 +55,18 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
     }
 
     override fun isBlank(ticket: Int, row: Int, column: Int): Boolean {
-        val randomIndex = randomProvider.nextInt(isBlankArrays[ticket][row].size - 1)
+        val randomIndex = randomProvider.nextInt(isBlankArrays[ticket][row].size)
         val isBlank = isBlankArrays[ticket][row].removeAt(randomIndex)
         if (isBlank) {
             remainingBlanksInColumn[column] = remainingBlanksInColumn[column]!! - 1
         }
         return isBlank
+    }
+
+    override fun fixInvalidSpaces() {
+//        sixTickets.invalidSpaces.forEach { ticketRowColumn ->
+//            sixTickets.getSubstituteFor(ticketRowColumn)
+//        }
     }
 
     private fun remainingBlanksInRow(ticket: Int, row: Int) = isBlankArrays[ticket][row].count { it }

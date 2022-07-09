@@ -13,12 +13,8 @@ sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvide
     override fun generateTickets(): SixTickets {
         initNewStripOfSix()
         var columnStart = 6
-        val mustBlankSpaces = HashSet<Int>()
-        val mustNumberSpaces = HashSet<Int>()
         for (ticket in 0 until 6) {
             for (row in 0 until 3) {
-                mustNumberSpaces.clear()
-                mustBlankSpaces.clear()
                 columnStart += 3
                 columnStart %= 9
 
@@ -27,22 +23,10 @@ sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvide
                 while (columnIterations < 9) {
                     val column = (columnStart + columnIterations) % 9
                     if (canBeBlank(ticket, row, column) && mustBeBlank(ticket, row, column, columnIterationsLeft)) {
-                        mustBlankSpaces.add(column)
                         addBlank(ticket, row, column)
                     } else if (mustBeNumber(ticket, row, column, columnIterationsLeft)) {
-                        mustNumberSpaces.add(column)
                         addNumber(ticket, row, column)
-                    }
-                    columnIterations++
-                    columnIterationsLeft--
-                }
-
-
-                columnIterationsLeft = 8
-                columnIterations = 0
-                while (columnIterations < 9) {
-                    val column = (columnStart + columnIterations) % 9
-                    if (!mustBlankSpaces.contains(column) && !mustNumberSpaces.contains(column)) {
+                    } else {
                         if (isBlank(ticket, row, column)) {
                             addBlank(ticket, row, column)
                         } else {
@@ -52,11 +36,13 @@ sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvide
                     columnIterations++
                     columnIterationsLeft--
                 }
-
             }
         }
+        fixInvalidSpaces()
         return sixTickets
     }
+
+    abstract fun fixInvalidSpaces()
 
     protected abstract fun doInit()
 
