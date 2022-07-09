@@ -87,33 +87,36 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
         return isBlankArrays
     }
 
-    private val numberArrayStorage: Array<IntArray> = Array(9) { arrayIndex ->
-        if (arrayIndex == 0) {
-            val array = IntArray(9)
-            for (i in 1..array.size) {
-                array[i - 1] = i
+    companion object {
+        private val numberArrayStorage: Array<IntArray> = Array(9) { arrayIndex ->
+            if (arrayIndex == 0) {
+                val array = IntArray(9)
+                for (i in 1..array.size) {
+                    array[i - 1] = i
+                }
+                array
+            } else if (arrayIndex < 8) {
+                val array = IntArray(10)
+                for (i in array.indices) {
+                    array[i] = 10 * arrayIndex + i
+                }
+                array
+            } else {
+                val array = IntArray(11)
+                for (i in array.indices) {
+                    array[i] = 10 * arrayIndex + i
+                }
+                array
             }
-            array
-        } else if (arrayIndex < 8) {
-            val array = IntArray(10)
+        }
+
+        private val isBlankArrayStorage: Array<BooleanArray> = Array(3) {
+            val array = BooleanArray(9)
             for (i in array.indices) {
-                array[i] = 10 * arrayIndex + i
-            }
-            array
-        } else {
-            val array = IntArray(11)
-            for (i in array.indices) {
-                array[i] = 10 * arrayIndex + i
+                array[i] = i < 4
             }
             array
         }
     }
 
-    private val isBlankArrayStorage: Array<BooleanArray> = Array(3) {
-        val array = BooleanArray(9)
-        for (i in array.indices) {
-            array[i] = i < 4
-        }
-        array
-    }
 }

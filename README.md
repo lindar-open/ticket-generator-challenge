@@ -1,3 +1,41 @@
+
+## System Requirements
+- Java 17, gradle
+- Docker
+
+## Build & Run
+Use the Makefile to execute build & run commands.
+
+To build with gradle and docker:
+```shell
+make build
+```
+
+To run the docker container:
+```shell
+make run-docker
+```
+If the container started, the ticket generator endpoint is available at:
+
+### [http://localhost:8080/bingo/newStrips](http://localhost:8080/bingo/newStrips)
+
+To run tests or performance tests:
+```shell
+make run-tests
+make run-perf-tests
+```
+
+## Implementation Details
+- `-1` means `Blank` space in the ticket
+- array lists are initialized in the `ArrayBasedTicketGenerator` to keep track of the state of the ticket generator
+- these array lists are maybe not optimal: removing an element has O(n) time complexity
+- it is possible to create another subclass for `AbstractTicketGenerator` which uses another approach
+  - e.g. instead of array lists, shuffled linked lists. removing from LL: O(1), shuffling during init: O(nlogn)
+- in very rare cases it generates an invalid ticket: need to find out why
+
+
+------
+Original content:
 # Ticket Generator Challenge
 
 A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/wiki/Bingo_(United_Kingdom)) ticket generator.
@@ -19,3 +57,4 @@ A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/w
 
 Try to also think about the performance aspects of your solution. How long does it take to generate 10k strips? 
 The recommended time is less than 1s (with a lightweight random implementation)
+

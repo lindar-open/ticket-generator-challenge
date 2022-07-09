@@ -24,7 +24,7 @@ class PerformanceTest {
     }
 
     @Test
-    fun `measure time for 100_000 strip generation in parallel`() {
+    fun `measure time for 10_000 strip generation in parallel`() {
         warmUpJvm()
 
         val strips = 10_000

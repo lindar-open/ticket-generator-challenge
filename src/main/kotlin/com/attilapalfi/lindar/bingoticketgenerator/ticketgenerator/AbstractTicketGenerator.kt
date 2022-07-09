@@ -20,39 +20,58 @@ sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvide
                 mustNumberSpaces.clear()
                 mustBlankSpaces.clear()
                 val columnIndices = listOf(0, 1, 2, 3, 4, 5, 6, 7, 8).shuffled()
-                var columnIterationsLeft = 8
-                columnIndices.forEachIndexed { columnIterator, column ->
-                    if (canBeBlank(ticket, row, column) && mustBeBlank(
-                            ticket,
-                            row,
-                            column,
-                            columnIterator,
-                            columnIndices
-                        )
-                    ) {
-                        mustBlankSpaces.add(column)
-                        addBlank(ticket, row, column)
-                    } else if (mustBeNumber(ticket, row, column, columnIterationsLeft)) {
-                        mustNumberSpaces.add(column)
-                        addNumber(ticket, row, column)
-                    }
-                    columnIterationsLeft--
-                }
-
-                columnIterationsLeft = 8
-                columnIndices.forEach { column ->
-                    if (!mustBlankSpaces.contains(column) && !mustNumberSpaces.contains(column)) {
-                        if (isBlank(ticket, row, column)) {
-                            addBlank(ticket, row, column)
-                        } else {
-                            addNumber(ticket, row, column)
-                        }
-                    }
-                    columnIterationsLeft--
-                }
+                fillWithMandatoryBlanksAndNumbers(columnIndices, ticket, row, mustBlankSpaces, mustNumberSpaces)
+                fillTheRestWithBlanksAndNumbers(columnIndices, mustBlankSpaces, mustNumberSpaces, ticket, row)
             }
         }
         return sixTickets
+    }
+
+    private fun fillWithMandatoryBlanksAndNumbers(
+        columnIndices: List<Int>,
+        ticket: Int,
+        row: Int,
+        mustBlankSpaces: HashSet<Int>,
+        mustNumberSpaces: HashSet<Int>
+    ) {
+        var columnIterationsLeft = 8
+        columnIndices.forEachIndexed { columnIterator, column ->
+            if (canBeBlank(ticket, row, column) && mustBeBlank(
+                    ticket,
+                    row,
+                    column,
+                    columnIterator,
+                    columnIndices
+                )
+            ) {
+                mustBlankSpaces.add(column)
+                addBlank(ticket, row, column)
+            } else if (mustBeNumber(ticket, row, column, columnIterationsLeft)) {
+                mustNumberSpaces.add(column)
+                addNumber(ticket, row, column)
+            }
+            columnIterationsLeft--
+        }
+    }
+
+    private fun fillTheRestWithBlanksAndNumbers(
+        columnIndices: List<Int>,
+        mustBlankSpaces: HashSet<Int>,
+        mustNumberSpaces: HashSet<Int>,
+        ticket: Int,
+        row: Int
+    ) {
+        var columnIterationsLeft = 8
+        columnIndices.forEach { column ->
+            if (!mustBlankSpaces.contains(column) && !mustNumberSpaces.contains(column)) {
+                if (isBlank(ticket, row, column)) {
+                    addBlank(ticket, row, column)
+                } else {
+                    addNumber(ticket, row, column)
+                }
+            }
+            columnIterationsLeft--
+        }
     }
 
     abstract fun mustBeBlank(
