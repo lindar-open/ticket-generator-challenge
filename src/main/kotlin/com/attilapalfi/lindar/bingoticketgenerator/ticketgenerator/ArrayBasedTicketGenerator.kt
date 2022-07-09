@@ -1,9 +1,9 @@
-package com.attilapalfi.lindar.bingoticketgenerator.numberprovider
+package com.attilapalfi.lindar.bingoticketgenerator.ticketgenerator
 
 import com.attilapalfi.lindar.bingoticketgenerator.random.RandomProvider
 import java.util.stream.IntStream
 
-class ArrayBasedNumberProvider(randomProvider: RandomProvider) : AbstractNumberProvider(randomProvider) {
+class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicketGenerator(randomProvider) {
     private lateinit var numberArrays: ArrayList<ArrayList<Int>>
     private lateinit var isBlankArrays: ArrayList<ArrayList<ArrayList<Boolean>>>
 
@@ -17,38 +17,52 @@ class ArrayBasedNumberProvider(randomProvider: RandomProvider) : AbstractNumberP
 
     override fun nextNumber(ticket: Int, row: Int, column: Int): Int {
         if (numberArrays[column].isEmpty()) {
+            println("This is wrong.")
             return BLANK
         }
+        decrementRemainingNumbersInStripRow(ticket, row)
         val randomIndex = randomProvider.nextInt(numberArrays[column].size - 1)
         return numberArrays[column].removeAt(randomIndex)
     }
 
-    override fun mustBeNumber(ticket: Int, row: Int, column: Int): Boolean {
+    override fun mustBeNumber(ticket: Int, row: Int, column: Int, columnIterationsLeft: Int): Boolean {
+        if (getRemainingNumbersInStripRow(ticket, row) == columnIterationsLeft + 1) {
+            return true
+        }
+
         val remainingTotalRows = remainingTotalRows(ticket, row)
         return remainingTotalRows == numberArrays[column].size
     }
 
-    override fun mustBeBlank(ticket: Int, row: Int, column: Int): Boolean {
-        val mustBeBlank = true
+    override fun mustBeBlank(ticket: Int, row: Int, column: Int, columnIterationsLeft: Int): Boolean {
+        val mustBeBlankByRow = remainingBlanksInRow(ticket, row) == maxPossibleBlanksInRow(ticket, row, column, columnIterationsLeft)
+        val mustBeBlankByColumn = remainingBlanksInColumn[column]!! == maxPossibleBlanksInColumn(ticket, row, column)
 
-        isBlankArrays[ticket][row].count { it }
-
-        if (mustBeBlank) {
+        if (mustBeBlankByRow || mustBeBlankByColumn) {
+            remainingBlanksInColumn[column] = remainingBlanksInColumn[column]!! - 1
             isBlankArrays[ticket][row].removeAt(0)
+            return true
         }
-        return mustBeBlank
+
+        return false
     }
 
     override fun canBeBlank(ticket: Int, row: Int, column: Int): Boolean {
         val canBeBlankByColumn = sixTickets.tickets[ticket].canBeBlankByColumn(row, column)
         val canBeBlankByRow = isBlankArrays[ticket][row][0]
-        return canBeBlankByColumn && canBeBlankByRow
+        return canBeBlankByColumn && canBeBlankByRow && remainingBlanksInColumn[column]!! > 0
     }
 
     override fun isBlank(ticket: Int, row: Int, column: Int): Boolean {
         val randomIndex = randomProvider.nextInt(isBlankArrays[ticket][row].size - 1)
-        return isBlankArrays[ticket][row].removeAt(randomIndex)
+        val isBlank = isBlankArrays[ticket][row].removeAt(randomIndex)
+        if (isBlank) {
+            remainingBlanksInColumn[column] = remainingBlanksInColumn[column]!! - 1
+        }
+        return isBlank
     }
+
+    private fun remainingBlanksInRow(ticket: Int, row: Int) = isBlankArrays[ticket][row].count { it }
 
     private fun copyNumbersAsArrayList(): ArrayList<ArrayList<Int>> {
         val numberArrays = ArrayList<ArrayList<Int>>(numberArrayStorage.size)

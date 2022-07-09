@@ -1,4 +1,4 @@
-package com.attilapalfi.lindar.bingoticketgenerator.numberprovider
+package com.attilapalfi.lindar.bingoticketgenerator.ticketgenerator
 
 import java.util.stream.IntStream
 

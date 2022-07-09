@@ -1,6 +1,6 @@
 package com.attilapalfi.lindar.bingoticketgenerator
 
-import com.attilapalfi.lindar.bingoticketgenerator.numberprovider.SixTickets
+import com.attilapalfi.lindar.bingoticketgenerator.ticketgenerator.SixTickets
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
