@@ -1,7 +1,9 @@
 package com.attilapalfi.lindar.bingoticketgenerator.random
 
+import org.springframework.stereotype.Component
 import kotlin.random.Random
 
+@Component
 class SimpleRandomProvider : RandomProvider {
 
     private val random = Random(System.currentTimeMillis())
