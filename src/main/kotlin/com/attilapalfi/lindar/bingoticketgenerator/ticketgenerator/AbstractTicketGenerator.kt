@@ -8,49 +8,66 @@ const val BLANK = -1
 sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvider) : TicketGenerator {
     protected lateinit var sixTickets: SixTickets
     protected lateinit var remainingBlanksInColumn: MutableMap<Int, Int>
-    private lateinit var remainingNumbersInStripRow: MutableMap<Int, Int>
+    private lateinit var remainingNumbersInRow: MutableMap<Int, Int>
+
 
     override fun generateTickets(): SixTickets {
         initNewStripOfSix()
-        var columnStart = 6
+        val mustBlankSpaces = HashSet<Int>()
+        val mustNumberSpaces = HashSet<Int>()
         for (ticket in 0 until 6) {
             for (row in 0 until 3) {
-                columnStart += 3
-                columnStart %= 9
-
+                mustNumberSpaces.clear()
+                mustBlankSpaces.clear()
+                val columnIndices = listOf(0, 1, 2, 3, 4, 5, 6, 7, 8).shuffled()
                 var columnIterationsLeft = 8
-                var columnIterations = 0
-                while (columnIterations < 9) {
-                    val column = (columnStart + columnIterations) % 9
-                    if (canBeBlank(ticket, row, column) && mustBeBlank(ticket, row, column, columnIterationsLeft)) {
+                columnIndices.forEachIndexed { columnIterator, column ->
+                    if (canBeBlank(ticket, row, column) && mustBeBlank(
+                            ticket,
+                            row,
+                            column,
+                            columnIterator,
+                            columnIndices
+                        )
+                    ) {
+                        mustBlankSpaces.add(column)
                         addBlank(ticket, row, column)
                     } else if (mustBeNumber(ticket, row, column, columnIterationsLeft)) {
+                        mustNumberSpaces.add(column)
                         addNumber(ticket, row, column)
-                    } else {
+                    }
+                    columnIterationsLeft--
+                }
+
+                columnIterationsLeft = 8
+                columnIndices.forEach { column ->
+                    if (!mustBlankSpaces.contains(column) && !mustNumberSpaces.contains(column)) {
                         if (isBlank(ticket, row, column)) {
                             addBlank(ticket, row, column)
                         } else {
                             addNumber(ticket, row, column)
                         }
                     }
-                    columnIterations++
                     columnIterationsLeft--
                 }
             }
         }
-        fixInvalidSpaces()
         return sixTickets
     }
 
-    abstract fun fixInvalidSpaces()
+    abstract fun mustBeBlank(
+        ticket: Int,
+        row: Int,
+        column: Int,
+        columnIterator: Int,
+        columnIndices: List<Int>
+    ): Boolean
 
     protected abstract fun doInit()
 
     protected abstract fun nextNumber(ticket: Int, row: Int, column: Int): Int
 
     protected abstract fun mustBeNumber(ticket: Int, row: Int, column: Int, columnIterationsLeft: Int): Boolean
-
-    protected abstract fun mustBeBlank(ticket: Int, row: Int, column: Int, columnIterationsLeft: Int): Boolean
 
     protected abstract fun canBeBlank(ticket: Int, row: Int, column: Int): Boolean
 
@@ -60,12 +77,12 @@ sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvide
         return ((6 - (ticket + 1)) * 3) + (3 - row)
     }
 
-    protected fun getRemainingNumbersInStripRow(ticket: Int, row: Int): Int {
-        return remainingNumbersInStripRow[ticket * 3 + row]!!
+    protected fun getRemainingNumbersInRow(ticket: Int, row: Int): Int {
+        return remainingNumbersInRow[ticket * 3 + row]!!
     }
 
-    protected fun decrementRemainingNumbersInStripRow(ticket: Int, row: Int) {
-        remainingNumbersInStripRow[ticket * 3 + row] = remainingNumbersInStripRow[ticket * 3 + row]!! - 1
+    protected fun decrementRemainingNumbersInRow(ticket: Int, row: Int) {
+        remainingNumbersInRow[ticket * 3 + row] = remainingNumbersInRow[ticket * 3 + row]!! - 1
     }
 
     protected fun maxPossibleBlanksInColumn(ticket: Int, row: Int, column: Int): Int {
@@ -81,16 +98,17 @@ sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvide
         return possibleBlanks
     }
 
-    protected fun maxPossibleBlanksInRow(ticket: Int, row: Int, column: Int, columnIterationsLeft: Int): Int {
-        var columnIndex = column
-        var columnIterator = 0
+    protected fun maxPossibleBlanksInRow(
+        ticket: Int,
+        row: Int,
+        columnIterator: Int,
+        columnIndices: List<Int>
+    ): Int {
         var possibleBlanks = 0
-        while (columnIterator <= columnIterationsLeft) {
-            if (canBeBlank(ticket, row, columnIndex)) {
+        for (i in columnIterator until columnIndices.size) {
+            if (canBeBlank(ticket, row, columnIndices[i])) {
                 possibleBlanks++
             }
-            columnIndex = (columnIndex + 1) % 9
-            columnIterator++
         }
         return possibleBlanks
     }
@@ -108,9 +126,9 @@ sealed class AbstractTicketGenerator(protected val randomProvider: RandomProvide
             Pair(7, 8),
             Pair(8, 7),
         )
-        remainingNumbersInStripRow = HashMap()
+        remainingNumbersInRow = HashMap()
         for (i in 0 until 18) {
-            remainingNumbersInStripRow[i] = 5
+            remainingNumbersInRow[i] = 5
         }
         doInit()
     }

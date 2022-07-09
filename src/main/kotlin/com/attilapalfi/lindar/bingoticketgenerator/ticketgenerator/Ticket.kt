@@ -36,6 +36,10 @@ class Ticket {
         return arrayListOf(*ticket.toTypedArray())
     }
 
+    fun getRow(row: Int): IntArray {
+        return ticket.copyOfRange(row * 9, (row + 1) * 9)
+    }
+
     fun getRowsOfTicket(): List<List<Int>> {
         val rows = ArrayList<ArrayList<Int>>()
         for (i in 0 until 27) {

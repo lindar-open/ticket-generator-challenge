@@ -17,26 +17,32 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
 
     override fun nextNumber(ticket: Int, row: Int, column: Int): Int {
         if (numberArrays[column].isEmpty()) {
-            println("This is wrong.")
+//            println("This is wrong.")
             sixTickets.invalidSpaces.add(SixTickets.TicketRowColumn(ticket, row, column))
             return BLANK
         }
-        decrementRemainingNumbersInStripRow(ticket, row)
+        decrementRemainingNumbersInRow(ticket, row)
         val randomIndex = randomProvider.nextInt(numberArrays[column].size)
         return numberArrays[column].removeAt(randomIndex)
     }
 
     override fun mustBeNumber(ticket: Int, row: Int, column: Int, columnIterationsLeft: Int): Boolean {
-        if (getRemainingNumbersInStripRow(ticket, row) == columnIterationsLeft + 1) {
+        if (getRemainingNumbersInRow(ticket, row) == columnIterationsLeft + 1) {
             return true
         }
-
         val remainingTotalRows = remainingTotalRows(ticket, row)
         return remainingTotalRows == numberArrays[column].size
     }
 
-    override fun mustBeBlank(ticket: Int, row: Int, column: Int, columnIterationsLeft: Int): Boolean {
-        val mustBeBlankByRow = remainingBlanksInRow(ticket, row) == maxPossibleBlanksInRow(ticket, row, column, columnIterationsLeft)
+    override fun mustBeBlank(
+        ticket: Int,
+        row: Int,
+        column: Int,
+        columnIterator: Int,
+        columnIndices: List<Int>
+    ): Boolean {
+        val mustBeBlankByRow =
+            remainingBlanksInRow(ticket, row) == maxPossibleBlanksInRow(ticket, row, columnIterator, columnIndices)
         val mustBeBlankByColumn = remainingBlanksInColumn[column]!! == maxPossibleBlanksInColumn(ticket, row, column)
 
         if (mustBeBlankByRow || mustBeBlankByColumn) {
@@ -61,12 +67,6 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
             remainingBlanksInColumn[column] = remainingBlanksInColumn[column]!! - 1
         }
         return isBlank
-    }
-
-    override fun fixInvalidSpaces() {
-//        sixTickets.invalidSpaces.forEach { ticketRowColumn ->
-//            sixTickets.getSubstituteFor(ticketRowColumn)
-//        }
     }
 
     private fun remainingBlanksInRow(ticket: Int, row: Int) = isBlankArrays[ticket][row].count { it }

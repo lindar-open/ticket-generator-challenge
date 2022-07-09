@@ -11,10 +11,10 @@ class PerformanceTest {
     private val randomProvider = SimpleRandomProvider()
 
     @Test
-    fun `measure time for 100_000 strip generation`() {
+    fun `measure time for 10_000 strip generation`() {
         warmUpJvm()
 
-        val strips = 100_000
+        val strips = 10_000
         val startTime = System.currentTimeMillis()
         for (i in 0 until strips) {
             ArrayBasedTicketGenerator(randomProvider).generateTickets()
@@ -27,7 +27,7 @@ class PerformanceTest {
     fun `measure time for 100_000 strip generation in parallel`() {
         warmUpJvm()
 
-        val strips = 100_000
+        val strips = 10_000
         val startTime = System.currentTimeMillis()
         val threads = Runtime.getRuntime().availableProcessors()
         val executorService = Executors.newFixedThreadPool(threads)

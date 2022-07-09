@@ -10,13 +10,12 @@ import org.junit.jupiter.api.fail
 class ArrayBasedTicketGeneratorTest {
 
     private lateinit var underTest: ArrayBasedTicketGenerator
-    private lateinit var numberSet: HashSet<Int>
 
-    @BeforeEach
-    fun init() {
-        numberSet = HashSet(90)
-        for (i in 1..90) {
-            numberSet.add(i)
+    @Test
+    fun `run tests 10 times`() {
+        for (i in 1 .. 10) {
+            `test with deterministic random provider`()
+            `test with simple random provider`()
         }
     }
 
@@ -41,6 +40,10 @@ class ArrayBasedTicketGeneratorTest {
     }
 
     private fun validateSixTickets(sixTickets: SixTickets) {
+        val numberSet = HashSet<Int>(90)
+        for (i in 1..90) {
+            numberSet.add(i)
+        }
         var iterator = 0
         sixTickets.tickets.forEachIndexed { ticketIndex, ticket ->
             validateRowRules(ticketIndex, ticket)
@@ -51,7 +54,7 @@ class ArrayBasedTicketGeneratorTest {
                 val columnInTicket = ticketValueIndex - (rowInTicket * 9)
 
                 if (value != BLANK) {
-                    validateValueIsNotDuplicated(value)
+                    validateValueIsNotDuplicated(value, numberSet)
                     validateValueIsInCorrectColumn(value, columnInTicket)
                 }
                 iterator++
@@ -99,7 +102,7 @@ class ArrayBasedTicketGeneratorTest {
         }
     }
 
-    private fun validateValueIsNotDuplicated(value: Int) {
+    private fun validateValueIsNotDuplicated(value: Int, numberSet: HashSet<Int>) {
         if (!numberSet.contains(value)) {
             fail("Number '$value' was duplicated in the tickets.")
         } else {
