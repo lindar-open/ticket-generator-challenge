@@ -12,6 +12,14 @@ class ArrayBasedTicketGeneratorTest {
     private lateinit var underTest: ArrayBasedTicketGenerator
 
     @Test
+    fun runAllTestsMultipleTimes() {
+        for (i in 0 .. 1000) {
+            `test with deterministic random provider`()
+            `test with simple random provider`()
+        }
+    }
+
+    @Test
     fun `test with deterministic random provider`() {
         underTest = ArrayBasedTicketGenerator(DeterministicRandomProvider())
 

@@ -27,11 +27,16 @@ make run-perf-tests
 
 ## Implementation Details
 - `-1` means `Blank` space in the ticket
+- the core part of the algorithm is in `AbstractTicketGenerator`
+- time complexity of algorithm is `O(n)` with some amortized time, where `n` is the total number of spaces in the 6 tickets
+- the algorithm is hard to scale though it was specifically implemented for 3x9 tickets in batches of 6
 - array lists are initialized in the `ArrayBasedTicketGenerator` to keep track of the state of the ticket generator
-- these array lists are maybe not optimal: removing an element has O(n) time complexity
-- it is possible to create another subclass for `AbstractTicketGenerator` which uses another approach
-  - e.g. instead of array lists, shuffled linked lists. removing from LL: O(1), shuffling during init: O(nlogn)
+  - these array lists are maybe not optimal: removing an element has `O(n)` time complexity
+  - it is possible to create another subclass for `AbstractTicketGenerator` which uses another approach
+    - e.g. instead of array lists, shuffled linked lists. removing from LL: `O(1)`, shuffling during init: `O(nlogn)`
+  - altough these are very small array lists: `n` is usually smaller than 20
 - in very rare cases it generates an invalid ticket: need to find out why
+  - to mitigate this I added error checking to the algorithm, and it generates a new strip of six tickets if needed 
 
 
 ------

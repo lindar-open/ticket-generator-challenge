@@ -9,16 +9,16 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
 
     override fun doInit() {
         numberArrays = copyNumbersAsArrayList()
-        isBlankArrays = ArrayList(6)
-        IntStream.range(0, 6).forEach {
+        isBlankArrays = ArrayList(TICKETS)
+        IntStream.range(0, TICKETS).forEach {
             isBlankArrays.add(copyBlanksAsArrayList())
         }
     }
 
     override fun nextNumber(ticket: Int, row: Int, column: Int): Int {
         if (numberArrays[column].isEmpty()) {
-//            println("This is wrong.")
-            sixTickets.invalidSpaces.add(SixTickets.TicketRowColumn(ticket, row, column))
+            // this should not happen
+            sixTickets.invalid = true
             return BLANK
         }
         decrementRemainingNumbersInRow(ticket, row)
@@ -88,21 +88,21 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
     }
 
     companion object {
-        private val numberArrayStorage: Array<IntArray> = Array(9) { arrayIndex ->
+        private val numberArrayStorage: Array<IntArray> = Array(COLUMNS) { arrayIndex ->
             if (arrayIndex == 0) {
-                val array = IntArray(9)
+                val array = IntArray(NUMBERS_IN_FIRST_COLUMN)
                 for (i in 1..array.size) {
                     array[i - 1] = i
                 }
                 array
             } else if (arrayIndex < 8) {
-                val array = IntArray(10)
+                val array = IntArray(NUMBERS_IN_MIDDLE_COLUMNS)
                 for (i in array.indices) {
                     array[i] = 10 * arrayIndex + i
                 }
                 array
             } else {
-                val array = IntArray(11)
+                val array = IntArray(NUMBERS_IN_LAST_COLUMN)
                 for (i in array.indices) {
                     array[i] = 10 * arrayIndex + i
                 }
@@ -111,9 +111,9 @@ class ArrayBasedTicketGenerator(randomProvider: RandomProvider) : AbstractTicket
         }
 
         private val isBlankArrayStorage: Array<BooleanArray> = Array(3) {
-            val array = BooleanArray(9)
+            val array = BooleanArray(COLUMNS)
             for (i in array.indices) {
-                array[i] = i < 4
+                array[i] = i < BLANKS_IN_ROW
             }
             array
         }

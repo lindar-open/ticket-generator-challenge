@@ -4,9 +4,10 @@ import java.util.stream.IntStream
 
 class SixTickets {
     val tickets: ArrayList<Ticket> = ArrayList(6)
+    var invalid: Boolean = false
 
     init {
-        IntStream.range(0, 6).forEach {
+        IntStream.range(0, TICKETS).forEach {
             tickets.add(Ticket())
         }
     }
