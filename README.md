@@ -29,8 +29,8 @@ make run-perf-tests
 - `-1` means `Blank` space in the ticket
 - the core part of the algorithm is in `AbstractTicketGenerator`
   - it iterates through the spaces of the tickets row by row and based on a set of rules it places the blanks and numbers
-- time complexity of algorithm is `O(n)` with some amortized time, where `n` is the total number of spaces in the 6 tickets
-- the algorithm is hard to scale though. it was specifically implemented to generate 3x9 tickets in batches of 6
+- time complexity of the algorithm is `O(n)` with some amortized time, where `n` is the total number of spaces in the 6 tickets
+  - the algorithm is hard to scale though. it was specifically implemented to generate 3x9 tickets in batches of 6
 - array lists are initialized in the `ArrayBasedTicketGenerator` to keep track of the state of the ticket generator
   - these array lists are maybe not optimal: removing an element has `O(n)` time complexity
   - it is possible to create another subclass for `AbstractTicketGenerator` which uses another approach
@@ -40,7 +40,14 @@ make run-perf-tests
 As soon as it's detected, the algorithm drops it and starts creating a new one. 
   - luckily this does not have a performance impact because it's so rare
 
+## Performance
+On my machine the performance test executed with these results:
 
+`Generated 10.000 strips in 487 ms.`
+
+And with 16 threads:
+
+`Generated 100.000 strips in parallel in 1602 ms.`
 
 ------
 Original content:
