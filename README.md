@@ -28,8 +28,9 @@ make run-perf-tests
 ## Implementation Details
 - `-1` means `Blank` space in the ticket
 - the core part of the algorithm is in `AbstractTicketGenerator`
+  - it iterates through the spaces of the tickets row by row and based on a set of rules it places the blanks and numbers
 - time complexity of algorithm is `O(n)` with some amortized time, where `n` is the total number of spaces in the 6 tickets
-- the algorithm is hard to scale though it was specifically implemented for 3x9 tickets in batches of 6
+- the algorithm is hard to scale though. it was specifically implemented to generate 3x9 tickets in batches of 6
 - array lists are initialized in the `ArrayBasedTicketGenerator` to keep track of the state of the ticket generator
   - these array lists are maybe not optimal: removing an element has `O(n)` time complexity
   - it is possible to create another subclass for `AbstractTicketGenerator` which uses another approach
