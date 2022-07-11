@@ -35,8 +35,10 @@ make run-perf-tests
   - it is possible to create another subclass for `AbstractTicketGenerator` which uses another approach
     - e.g. instead of array lists, shuffled linked lists. removing from LL: `O(1)`, shuffling during init: `O(nlogn)`
   - altough these are very small array lists: `n` is usually smaller than 20
-- in very rare cases it generates an invalid ticket: need to find out why
-  - to mitigate this I added error checking to the algorithm, and it generates a new strip of six tickets if needed 
+- an error checking is part of the algorithm, because in very rare cases an invalid ticket is generated. 
+As soon as it's detected, the algorithm drops it and starts creating a new one. 
+  - luckily this does not have a performance impact because it's so rare
+
 
 
 ------
