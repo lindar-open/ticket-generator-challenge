@@ -1,3 +1,56 @@
+
+## System Requirements
+- Java 17, gradle
+- Docker
+
+## Build & Run
+Use the Makefile to execute build & run commands.
+
+To build with gradle and docker:
+```shell
+make build
+```
+
+To run the docker container:
+```shell
+make run-docker
+```
+If the container started, the ticket generator endpoint is available at:
+
+### [http://localhost:8080/bingo/newStrips](http://localhost:8080/bingo/newStrips)
+
+To run tests or performance tests:
+```shell
+make run-tests
+make run-perf-tests
+```
+
+## Implementation Details
+- `-1` means `Blank` space in the ticket
+- the core part of the algorithm is in `AbstractTicketGenerator`
+  - it iterates through the spaces of the tickets row by row and based on a set of rules it places the blanks and numbers
+- time complexity of the algorithm is `O(n)` with some amortized time, where `n` is the total number of spaces in the 6 tickets
+  - the algorithm is hard to scale though. it was specifically implemented to generate 3x9 tickets in batches of 6
+- array lists are initialized in the `ArrayBasedTicketGenerator` to keep track of the state of the ticket generator
+  - these array lists are maybe not optimal: removing an element has `O(n)` time complexity
+  - it is possible to create another subclass for `AbstractTicketGenerator` which uses another approach
+    - e.g. instead of array lists, shuffled linked lists. removing from LL: `O(1)`, shuffling during init: `O(nlogn)`
+  - altough these are very small array lists: `n` is usually smaller than 20
+- an error checking is part of the algorithm, because in very rare cases an invalid ticket is generated. 
+As soon as it's detected, the algorithm drops it and starts creating a new one. 
+  - luckily this does not have a performance impact because it's so rare
+
+## Performance
+On my machine the performance test executed with these results:
+
+`Generated 10.000 strips in 487 ms.`
+
+And with 16 threads:
+
+`Generated 100.000 strips in parallel in 1602 ms.`
+
+------
+Original content:
 # Ticket Generator Challenge
 
 A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/wiki/Bingo_(United_Kingdom)) ticket generator.
@@ -19,3 +72,4 @@ A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/w
 
 Try to also think about the performance aspects of your solution. How long does it take to generate 10k strips? 
 The recommended time is less than 1s (with a lightweight random implementation)
+
