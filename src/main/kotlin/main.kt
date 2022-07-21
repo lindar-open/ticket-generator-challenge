@@ -1,3 +1,5 @@
+import java.lang.Integer.max
+import java.lang.Integer.min
 import kotlin.system.measureTimeMillis
 
 class Strip {
@@ -63,7 +65,7 @@ class Strip {
         if (emptyPositionList.size != 72)
             throw Exception()
 
-        for (i in 0 .. 8) {
+        for (i in 0 until 9) {
             var permSize = 10
             if (i == 0)
                 permSize = 9
@@ -75,7 +77,7 @@ class Strip {
             var previousJ = 0
             var permutationIndex = 0
 
-            for (j in 0 .. 17) {
+            for (j in 0 until 18) {
                 if (j !in columns[i]) {
                     if (j/3 != previousJ/3) {
                         tempValues.sort()
@@ -97,6 +99,53 @@ class Strip {
             for ((index, value) in tempIndices.withIndex())
                 numberList[Pair(value, i)] = tempValues[index]
         }
+    }
+
+    fun validate(): Boolean {
+        if (numberList.keys.any {
+            it.first < 0 || it.first >= 18 || it.second < 0 || it.second >= 9
+        })
+            return false
+        if (numberList.values.toSet() != (1 .. 90).toSet())
+            return false
+        for (i in 0 until 18) {
+            var cnt = 0
+            for (j in 0 until 9)
+                if (numberList.containsKey(Pair(i, j)))
+                    ++cnt
+            if (cnt != 5)
+                return false
+        }
+        for (j in 0 until 9) {
+            var cnt = 0
+            var minimum = 100
+            var maximum = 0
+            for (i in 0 until 18)
+                if (numberList.containsKey(Pair(i, j))) {
+                    val value = numberList[Pair(i, j)]!!
+                    ++cnt
+                    minimum = min(minimum, value)
+                    maximum = max(maximum, value)
+                }
+            if (j == 0 && cnt == 9 && minimum == 1 && maximum == 9)
+                continue
+            if (j == 8 && cnt == 11 && minimum == 80 && maximum == 90)
+                continue
+            if (cnt == 10 && minimum == j * 10 && maximum == j * 10 + 9)
+                continue
+            return false
+        }
+        for (j in 0 until 9)
+            for (i in 0 until 6) {
+                val i1 = i * 3
+                val i2 = (i+1) * 3
+                val numbersOnTicketColumn = (i1 until i2).mapNotNull { numberList[Pair(it, j)] }
+                if (numbersOnTicketColumn != numbersOnTicketColumn.sorted())
+                    return false
+                if (numbersOnTicketColumn.isEmpty())
+                    return false
+            }
+        return true
     }
 
     override fun toString(): String {
@@ -125,8 +174,13 @@ class Strip {
 
 fun main() {
     val millis = measureTimeMillis {
-        for (i in 0 until 10000)
-            Strip()
+        for (i in 0 until 10000) {
+            val s = Strip()
+            if (!s.validate()) {
+                println(s.toString())
+                return@measureTimeMillis
+            }
+        }
     }
 
     println(Strip.allAttempts)
