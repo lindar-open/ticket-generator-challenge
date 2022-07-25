@@ -8,13 +8,49 @@ class Strip {
         var successfulAttempts = 0
     }
 
+    // will store the mapping between the position in the strip matrix (18 x 9) and the value in that cell
     private var numberList: MutableMap<Pair<Int, Int>, Int> = mutableMapOf()
 
+    // holds the possible cells that could be empty
+    private var positionPool = List(162) {
+        val row = it / 9
+        val col = it % 9
+        Pair(row, col)
+    }.shuffled()
+
+    // holds the number of empty cells on each row
+    private var cntPerRow = List(18) {0}.toMutableList()
+
+    // holds the list of row indexes for the empty cells in each column
+    private var columns = List(9) { mutableSetOf<Int>() }.toMutableList()
+
+    // holds the number of empty cells in each column of 3 cells within each ticket in the strip
+    private var ticketColumns = List(6) {List(9) {0}.toMutableList() }
+
+    // counts the number of cells in the matrix that were decided to not contain numbers
+    // will be 72 when the algorithm ends
+    private var emptyPositionsTaken = 0
+
+    private fun resetPrivateFields() {
+        numberList.clear()
+        positionPool = List(162) {
+            val row = it / 9
+            val col = it % 9
+            Pair(row, col)
+        }.shuffled()
+        numberList = mutableMapOf()
+        cntPerRow = List(18){0}.toMutableList()
+        columns = List(9) { mutableSetOf<Int>() }.toMutableList()
+        ticketColumns = List(6) {List(9) {0}.toMutableList() }
+        emptyPositionsTaken = 0
+    }
+
     init {
+        // will try the random algorithm until successful
         while (true) {
             ++allAttempts
             try {
-                numberList.clear()
+                resetPrivateFields()
                 initStrip()
                 ++successfulAttempts
                 break
@@ -23,81 +59,102 @@ class Strip {
         }
     }
 
+    // initStrip will randomly assign cells in the matrix that are empty, the rest will contain numbers
     private fun initStrip() {
-        val emptyPositionList = mutableListOf<Pair<Int, Int>>()
+        // if unable to fulfil the requirements throw exception
+        if (!buildEmptyPositions())
+            throw Exception()
+        assignNumbers()
+    }
 
-        val positionPool = List(162) {
-            val row = it / 9
-            val col = it % 9
-            Pair(row, col)
-        }.toMutableSet()
-        val cntPerRow = List(18) {0}.toMutableList()
-        val columns = List(9) { mutableSetOf<Int>() }.toMutableList()
-        val ticketColumns = List(6) {List(9) {0}.toMutableList() }
-
-        while (positionPool.isNotEmpty()) {
-            if (emptyPositionList.size == 72)
+    // returns false if unable to come up with a solution
+    private fun buildEmptyPositions(): Boolean {
+        for (position in positionPool) {
+            if (emptyPositionsTaken == 72)
                 break
 
-            val position = positionPool.random()
-            positionPool.remove(position)
-
-            if (cntPerRow[position.first] >= 4)
-                continue
-
-            var maxSize = 8
-            if (position.second == 0)
-                maxSize = 9
-            if (position.second == 8)
-                maxSize = 7
-            if (columns[position.second].size >= maxSize)
-                continue
-
-            if (ticketColumns[position.first / 3][position.second] == 2)
-                continue
-
-            emptyPositionList.add(position)
-            cntPerRow[position.first]++
-            columns[position.second].add(position.first)
-            ticketColumns[position.first / 3][position.second]++
+            tryEmptyPosition(position)
         }
 
-        if (emptyPositionList.size != 72)
-            throw Exception()
+        // there should be 72 empty cells in the matrix such that 90 will be filled with numbers
+        return emptyPositionsTaken == 72
+    }
 
-        for (i in 0 until 9) {
-            var permSize = 10
-            if (i == 0)
-                permSize = 9
-            if (i == 8)
-                permSize = 11
-            val permutation = List(permSize) {it + i * 10 + if (i == 0) 1 else 0}.shuffled()
+    private fun tryEmptyPosition(position: Pair<Int, Int>): Boolean {
+        // a row must have 4 empty cells, no more
+        if (cntPerRow[position.first] >= 4)
+            return false
+
+        val columnEmptyCellLimit = when (position.second) {
+            0 -> 9 // the first column in the strip has 9 empty cells
+            8 -> 7 // the last column in the strip has 7 empty cells
+            else -> 8 // all the other columns have 8 empty cells each
+        }
+
+        if (columns[position.second].size >= columnEmptyCellLimit)
+            return false
+
+        // the ticket to which the cell belongs is determined by dividing position.first by 3
+        if (ticketColumns[position.first / 3][position.second] == 2)
+            return false
+
+        // no criteria is being violated, an empty cell is decided
+        ++emptyPositionsTaken
+        cntPerRow[position.first]++
+        columns[position.second].add(position.first)
+        ticketColumns[position.first / 3][position.second]++
+
+        return true
+    }
+
+    // this function is called after the empty cells have been assigned, then a solution is guaranteed to exist
+    // and we have to assign numbers to non-empty cells
+    private fun assignNumbers() {
+        // solve each row at a time
+        for (row in 0 until 9) {
+            // the number of non-empty cells on the current row
+            val permSize = when(row) {
+                0 -> 9
+                8 -> 11
+                else -> 10
+            }
+
+            // permute the numbers assigned to this row (e.g. 20 through 29 on the third row)
+            val permutation = List(permSize) {
+                it + row * 10 + if (row == 0) 1 else 0
+            }.shuffled()
+
+            // the sequence below sorts the numbers on the non-empty cells within the same ticket, without
+            // altering the relative order between elements on different strips
             val tempValues = mutableListOf<Int>()
             val tempIndices = mutableListOf<Int>()
-            var previousJ = 0
+            var previousColumn = 0
             var permutationIndex = 0
 
-            for (j in 0 until 18) {
-                if (j !in columns[i]) {
-                    if (j/3 != previousJ/3) {
+            for (column in 0 until 18) {
+                if (column !in columns[row]) {
+                    // the ticket has changed, so sort elements found on the previous ticket and add them to the numberList
+                    if (column/3 != previousColumn/3) {
                         tempValues.sort()
                         for ((index, value) in tempIndices.withIndex())
-                            numberList[Pair(value, i)] = tempValues[index]
+                            numberList[Pair(value, row)] = tempValues[index]
 
                         tempValues.clear()
                         tempIndices.clear()
                     }
 
                     tempValues.add(permutation[permutationIndex++])
-                    tempIndices.add(j)
+                    tempIndices.add(column)
 
-                    previousJ = j
+                    previousColumn = column
                 }
             }
 
+            // the last ticket wasn't changed, so we have to manually cover it since it didn't activate
+            // the condition in the if branch
             tempValues.sort()
             for ((index, value) in tempIndices.withIndex())
-                numberList[Pair(value, i)] = tempValues[index]
+                numberList[Pair(value, row)] = tempValues[index]
         }
     }
 
@@ -173,8 +230,10 @@ class Strip {
 }
 
 fun main() {
+    val stripsToGenerate = 10000
+
     val millis = measureTimeMillis {
-        for (i in 0 until 10000) {
+        for (i in 0 until stripsToGenerate) {
             val s = Strip()
             if (!s.validate()) {
                 println(s.toString())
@@ -183,8 +242,10 @@ fun main() {
         }
     }
 
-    println(Strip.allAttempts)
-    println(Strip.successfulAttempts)
-
-    println(millis)
+    println("Total attempts made: ${Strip.allAttempts}")
+    println("Successful attempts: ${Strip.successfulAttempts}")
+    println("Time it took to generate $stripsToGenerate strips: $millis ms")
+    println()
+    println("An example of a strip")
+    println(Strip())
 }
