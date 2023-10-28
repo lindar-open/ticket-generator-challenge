@@ -1,5 +1,12 @@
 # Ticket Generator Challenge
 
+## Project startup
+* developed in Kotlin and JDK17
+* To build project please run `./gradlew build`
+* To run unit tests execute `./gradlew test`
+* Project contains sample console app that allows to verify ticket stripe generation time.
+  * After JVM warmup 10K stripes should be generated in approx 500-600ms (depending on machine performance). 
+
 A small challenge that involves building a [Bingo 90](https://en.wikipedia.org/wiki/Bingo_(United_Kingdom)) ticket generator.
 
 **Requirements:**
